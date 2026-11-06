@@ -1,0 +1,46 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: mandicast
+      POSTGRES_USER: mandicast
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-this-local-password}
+    volumes:
+      - mandicast-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mandicast -d mandicast"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+
+  api:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql+psycopg://mandicast:${POSTGRES_PASSWORD:-change-this-local-password}@db:5432/mandicast
+      MANDICAST_STORAGE_DIR: /app/storage
+      FRONTEND_ORIGIN: http://localhost:8080
+      MAX_UPLOAD_MB: 100
+    ports:
+      - "8000:8000"
+    volumes:
+      - mandicast-storage:/app/storage
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/api/v1/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  mandicast-postgres:
+  mandicast-storage:

@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mandicast-india-api"
+version = "1.0.0"
+description = "Schema-aware commodity intelligence and generic time-series forecasting API"
+requires-python = ">=3.11"
+readme = "../README.md"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.ruff]
+line-length = 110
+target-version = "py311"
